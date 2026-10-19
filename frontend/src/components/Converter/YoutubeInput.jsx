@@ -141,10 +141,12 @@ export default function YoutubeInput({ onStartConvert, disabled = false }) {
                   }}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white flex items-center gap-1">
-                  <Clock className="w-2.5 h-2.5" />
-                  <span>{preview.durationFormatted}</span>
-                </div>
+                {preview.durationFormatted && preview.durationFormatted !== '00:00' && (
+                  <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    <span>{preview.durationFormatted}</span>
+                  </div>
+                )}
               </div>
             ) : null}
 

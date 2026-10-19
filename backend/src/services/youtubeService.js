@@ -130,6 +130,7 @@ export const fetchYouTubeWebMetadata = async (url) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Cookie': 'CONSENT=PENDING+999; SOCS=CAESEwgDEgk2MTQyNjY5NjQaAmVuIAEaBgiA_LyaBg;',
       },
     });
 
@@ -141,10 +142,18 @@ export const fetchYouTubeWebMetadata = async (url) => {
         throw new Error('Live streams cannot be converted. Please select an on-demand video.');
       }
 
+      // Check lengthSeconds first
+      const lengthMatch = html.match(/"lengthSeconds":"(\d+)"/);
+      if (lengthMatch && lengthMatch[1]) {
+        durationSeconds = parseInt(lengthMatch[1], 10);
+      }
+
       // Extract duration in milliseconds
-      const durationMatch = html.match(/"approxDurationMs":"(\d+)"/);
-      if (durationMatch && durationMatch[1]) {
-        durationSeconds = Math.round(parseInt(durationMatch[1], 10) / 1000);
+      if (!durationSeconds) {
+        const durationMatch = html.match(/"approxDurationMs":"(\d+)"/);
+        if (durationMatch && durationMatch[1]) {
+          durationSeconds = Math.round(parseInt(durationMatch[1], 10) / 1000);
+        }
       }
 
       // Fallback: ISO 8601 itemprop duration (e.g., PT5M9S)
