@@ -187,7 +187,20 @@ export default function ConverterCard() {
                 </div>
               </div>
 
-              <div className="pt-1 flex justify-end">
+              <div className="pt-1 flex flex-wrap items-center justify-end gap-2">
+                {(error?.includes('bot verification') || error?.includes('Video Upload') || error?.includes('cloud servers')) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('upload');
+                      handleReset();
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-violet to-brand-blue hover:opacity-95 flex items-center gap-2 shadow-md shadow-brand-violet/20 transition-all cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Switch to Video Upload (100% Reliable)</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleReset}

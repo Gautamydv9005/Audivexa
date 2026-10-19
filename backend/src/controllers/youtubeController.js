@@ -81,6 +81,7 @@ export const convertYouTube = async (req, res, next) => {
     return res.status(400).json({
       success: false,
       error: err.message || 'Failed to process YouTube link.',
+      code: err.code || 'CONVERSION_ERROR',
     });
   }
 };

@@ -35,14 +35,19 @@ async function install() {
 
   const ytDlpPath = path.join(binDir, 'yt-dlp');
 
-  // If already exists and executable, verify
+  // If already exists and executable, verify and update
   if (fs.existsSync(ytDlpPath)) {
     try {
-      execSync(`"${ytDlpPath}" --version`, { stdio: 'pipe' });
-      console.log('[install-ytdlp] Existing yt-dlp binary is verified and operational.');
+      const ver = execSync(`"${ytDlpPath}" --version`, { stdio: 'pipe' }).toString().trim();
+      console.log(`[install-ytdlp] Existing yt-dlp binary found (version: ${ver}). Checking for updates...`);
+      try {
+        execSync(`"${ytDlpPath}" -U`, { stdio: 'inherit' });
+      } catch {
+        // Self-update notice only, continue with verified binary
+      }
       return;
     } catch (e) {
-      console.warn('[install-ytdlp] Existing binary failed, re-downloading...');
+      console.warn('[install-ytdlp] Existing binary check failed, re-downloading latest release...');
     }
   }
 

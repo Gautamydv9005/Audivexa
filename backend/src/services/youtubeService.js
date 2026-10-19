@@ -345,16 +345,28 @@ export const downloadYouTubeAudioStream = (url) => {
         if (code !== 0 || !fs.existsSync(tempPath)) {
           if (tempPath) await safeDelete(tempPath);
           const errText = stderr.trim();
-          console.error('[YouTube Download Error]', { code, stderr: errText });
-          if (errText.includes('Sign in to confirm you’re not a bot') || errText.includes('bot')) {
-            return reject(new Error('YouTube bot verification triggered on server IP. Try another link or video upload.'));
+          const lowerErr = errText.toLowerCase();
+
+          // Gracefully detect YouTube bot challenge / datacenter IP block
+          if (
+            lowerErr.includes('sign in to confirm') ||
+            lowerErr.includes('not a bot') ||
+            lowerErr.includes('confirm you')
+          ) {
+            console.warn('[YouTube Downloader]: YouTube requires bot verification for cloud IP. Prompting upload fallback.');
+            const botError = new Error('YouTube has restricted direct streaming on this video from cloud servers (bot verification required). Please use our direct Video Upload converter instead for instant, 100% reliable 320kbps MP3 conversion.');
+            botError.code = 'YOUTUBE_BOT_RESTRICTION';
+            return reject(botError);
           }
-          if (errText.includes('Private video')) {
-            return reject(new Error('This YouTube video is private or restricted.'));
+
+          if (lowerErr.includes('private video') || lowerErr.includes('private')) {
+            return reject(new Error('This YouTube video is private or restricted by its owner.'));
           }
-          if (errText.includes('Video unavailable')) {
+          if (lowerErr.includes('video unavailable') || lowerErr.includes('not exist')) {
             return reject(new Error('YouTube video is unavailable or restricted.'));
           }
+
+          console.error('[YouTube Download Error]', { code, stderr: errText });
           const lastLine = errText.split('\n').pop() || '';
           return reject(new Error(lastLine ? `YouTube download failed: ${lastLine}` : 'Failed to download YouTube audio stream.'));
         }

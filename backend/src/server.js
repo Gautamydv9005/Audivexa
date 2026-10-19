@@ -13,6 +13,10 @@ ensureDirectoriesExist();
 // Initialize express app
 const app = express();
 
+// Trust immediate reverse proxy (Render edge proxy / Cloudflare)
+// Resolves ERR_ERL_UNEXPECTED_X_FORWARDED_FOR and ensures correct client IP tracking
+app.set('trust proxy', 1);
+
 // Security HTTP headers
 app.use(
   helmet({

@@ -29,3 +29,12 @@ yarn-error.log*
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Authentication and Secrets
+cookies.txt
+*.cookies
+*.cookie
+
+# Local downloaded binaries
+backend/bin/*
+!backend/bin/.gitkeep
