@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,6 +30,34 @@ export const cleanYouTubeUrl = (url) => {
   return url.trim();
 };
 
+let cachedYtDlp = null;
+
+/**
+ * Cross-platform detection of yt-dlp binary or Python runner
+ */
+export const resolveYtDlpCommand = () => {
+  if (cachedYtDlp) return cachedYtDlp;
+
+  const candidates = [
+    { bin: 'yt-dlp', prefixArgs: [] },
+    { bin: 'python3', prefixArgs: ['-m', 'yt_dlp'] },
+    { bin: 'python', prefixArgs: ['-m', 'yt_dlp'] },
+    { bin: 'py', prefixArgs: ['-m', 'yt_dlp'] },
+  ];
+
+  for (const cand of candidates) {
+    try {
+      execSync(`${cand.bin} ${cand.prefixArgs.join(' ')} --version`, { stdio: 'pipe' });
+      cachedYtDlp = cand;
+      return cand;
+    } catch (e) {
+      // try next candidate
+    }
+  }
+
+  return { bin: process.platform === 'win32' ? 'python' : 'python3', prefixArgs: ['-m', 'yt_dlp'] };
+};
+
 /**
  * Fetch YouTube video metadata via yt-dlp
  */
@@ -41,8 +69,10 @@ export const getYouTubeInfo = (url) => {
       return reject(new Error('Please enter a valid YouTube video URL (e.g. https://www.youtube.com/watch?v=...)'));
     }
 
+    const { bin, prefixArgs } = resolveYtDlpCommand();
+
     const args = [
-      '-m', 'yt_dlp',
+      ...prefixArgs,
       '--js-runtimes', 'node:node',
       '--dump-json',
       '--no-playlist',
@@ -51,7 +81,7 @@ export const getYouTubeInfo = (url) => {
       targetUrl,
     ];
 
-    const child = spawn('python', args);
+    const child = spawn(bin, args);
 
     let stdout = '';
     let stderr = '';
@@ -124,8 +154,10 @@ export const downloadYouTubeAudioStream = (url) => {
       const tempFilename = `yt_${uuidv4()}.webm`;
       const tempPath = path.join(config.tempDir, tempFilename);
 
+      const { bin, prefixArgs } = resolveYtDlpCommand();
+
       const args = [
-        '-m', 'yt_dlp',
+        ...prefixArgs,
         '--js-runtimes', 'node:node',
         '-f', 'ba/b',
         '--ffmpeg-location', resolvedFfmpeg,
@@ -135,7 +167,7 @@ export const downloadYouTubeAudioStream = (url) => {
         targetUrl,
       ];
 
-      const child = spawn('python', args);
+      const child = spawn(bin, args);
 
       let stderr = '';
 

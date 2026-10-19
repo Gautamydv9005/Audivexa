@@ -24,11 +24,32 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow all localhost/dev origins or configured client URL
-      if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === config.clientUrl) {
-        return callback(null, true);
+      // Allow requests with no origin (e.g. mobile apps, curl, health probes)
+      if (!origin) return callback(null, true);
+
+      // Allow configured client URL, localhost dev servers, and production domains
+      const explicitAllowed = [
+        config.clientUrl,
+        'https://audivexa.com',
+        'https://www.audivexa.com',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+      ];
+
+      if (
+        explicitAllowed.includes(origin) ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        /\.vercel\.app$/.test(origin) ||
+        /\.netlify\.app$/.test(origin) ||
+        /\.onrender\.com$/.test(origin)
+      ) {
+        return callback(null, origin);
       }
-      return callback(null, true); // Permissive for universal API consumption
+
+      // Safe origin reflection for web clients (avoids disallowed '*' when credentials: true)
+      return callback(null, origin);
     },
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Range', 'Authorization'],

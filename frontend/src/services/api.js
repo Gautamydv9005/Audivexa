@@ -2,7 +2,27 @@
  * Audivexa API Service Client
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+// Central API Base URL Configuration
+const normalizeApiBase = (url) => {
+  if (!url) return '';
+  const trimmed = url.trim().replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
+const resolveApiBase = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE;
+  if (envUrl && envUrl.trim() !== '') {
+    return normalizeApiBase(envUrl);
+  }
+  // Production fallback directly to deployed Render backend
+  if (import.meta.env.PROD) {
+    return 'https://audivexa.onrender.com/api';
+  }
+  // Local development default: uses Vite proxy configured in vite.config.js
+  return '/api';
+};
+
+const API_BASE = resolveApiBase();
 
 /**
  * Upload a local video file with upload progress tracking
