@@ -134,6 +134,11 @@ export default function YoutubeInput({ onStartConvert, disabled = false }) {
                 <img
                   src={preview.thumbnail}
                   alt={preview.title}
+                  onError={(e) => {
+                    if (preview.fallbackThumbnail && e.currentTarget.src !== preview.fallbackThumbnail) {
+                      e.currentTarget.src = preview.fallbackThumbnail;
+                    }
+                  }}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white flex items-center gap-1">

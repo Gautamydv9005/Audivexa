@@ -25,9 +25,11 @@ export const inspectUrl = async (req, res, next) => {
         durationFormatted: formatDuration(info.durationSeconds),
         author: info.author,
         thumbnail: info.thumbnail,
+        fallbackThumbnail: info.fallbackThumbnail || info.thumbnail,
       },
     });
   } catch (err) {
+    console.error('[YouTube Inspect Error]:', err.message);
     return res.status(400).json({
       success: false,
       error: err.message || 'Unable to inspect the provided YouTube URL.',

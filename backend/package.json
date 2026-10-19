@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "postinstall": "python3 -m pip install yt-dlp || python -m pip install yt-dlp || pip install yt-dlp || true"
+    "postinstall": "node scripts/install-ytdlp.js || true"
   },
   "keywords": [
     "video-to-mp3",

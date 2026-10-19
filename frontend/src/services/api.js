@@ -71,15 +71,26 @@ export const uploadVideo = async ({ file, bitrate = '320k', onUploadProgress = (
  * Inspect YouTube URL for preview metadata
  */
 export const inspectYouTubeUrl = async (url) => {
-  const res = await fetch(`${API_BASE}/convert/youtube/inspect`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url }),
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/convert/youtube/inspect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+  } catch (networkErr) {
+    throw new Error('Unable to connect to the backend server. Please check your internet connection.');
+  }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(`Server returned status ${res.status} (${res.statusText || 'Unknown error'})`);
+  }
+
   if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Failed to inspect YouTube URL');
+    throw new Error(data.error || 'Failed to retrieve video details from YouTube.');
   }
   return data.data;
 };
@@ -88,13 +99,24 @@ export const inspectYouTubeUrl = async (url) => {
  * Initiate YouTube to MP3 conversion
  */
 export const convertYouTube = async ({ url, bitrate = '320k' }) => {
-  const res = await fetch(`${API_BASE}/convert/youtube`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, bitrate }),
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/convert/youtube`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, bitrate }),
+    });
+  } catch (networkErr) {
+    throw new Error('Unable to connect to the backend server. Please check your internet connection.');
+  }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(`Server returned status ${res.status} (${res.statusText || 'Unknown error'})`);
+  }
+
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Failed to start YouTube conversion');
   }
